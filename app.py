@@ -33,17 +33,12 @@ def encoder(data):
 def decode(pred):
     label_encoder = LabelEncoder()
     label_encoder.classes_ = np.load('models/classes.npy', allow_pickle=True,)
-    label_encoder.inverse_transform(pred)
+    label_encoder.inverse_transform(pred[0])
     return pred
 
 def text_process(text):
     text = text.replace('/', ' ')
     return ''.join([char for char in text if char not in string.punctuation])
-
-def get_prediction(data):
-    rf = joblib.load('models/rf_animal_centre_outcome_prediction.joblib')
-    pred = rf.predict(data.drop(['outcome_type', 'outcome_subtype'], axis=1))
-    return pred
 
 app = Flask(__name__)
 
@@ -64,7 +59,8 @@ def sms():
         },
         index=[1])
         data = encoder(data)
-        pred = get_prediction(data.values)
+        rf = joblib.load('models/rf_animal_centre_outcome_prediction.joblib')
+        pred = rf.predict(data.drop(['outcome_type', 'outcome_subtype'], axis=1))
         print(pred)
         pred = decode(pred)
         print(pred)
